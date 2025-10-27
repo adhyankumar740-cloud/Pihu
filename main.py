@@ -1401,7 +1401,7 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         f"🧠 **RAM**: `{ram_usage}%`\n"
         f"💻 **CPU**: `{cpu_usage}%`\n"
         f"💾 **Disk**: `{disk_usage}%`\n\n"
-        "✨ by Adhyan ✨"
+        "✨ by Gopu ✨"
     )
     
     await msg.delete() # Delete "Calculating stats..." message
@@ -1487,7 +1487,7 @@ async def admin_stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE
         f" Custom Welcomes: `⚠️ Disabled`\n" # NEW
         "**API Status**\n"
         f"{api_key_status_text}"
-        "\n\n✨ by Adhyan ✨"
+        "\n\n✨ by Gopu ✨"
     )
     await msg.delete()
     await context.bot.send_message(chat_id=chat_id, text=response_text, parse_mode='Markdown')
@@ -2531,7 +2531,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         )
         help_text += sudo_help_text
         
-    help_text += "\n\n✨ by Adhyan ✨"
+    help_text += "\n\n✨ by Gopu ✨"
     
     await update.message.reply_text(help_text, parse_mode='Markdown', disable_web_page_preview=True)
     logger.info(f"[{update.effective_chat.id}] /help command used.")
@@ -2541,9 +2541,9 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 async def about_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     about_text = (
         "❤️ **About Pihu** ❤️\n\n" # Pihu
-        "I am Pihu, an AI assistant created by AdhyanXlive. My purpose is to chat with you and provide answers to your questions.\n\n" # Pihu
+        "I am Pihu, an AI assistant . My purpose is to chat with you and provide answers to your questions.\n\n" # Pihu
         "My intelligence comes from a family of large language models, allowing me to provide helpful and accurate responses.\n\n"
-        "✨ **Creator**: Adhyan\n"
+        "✨ **Owner**: Gopu\n"
         "✨ **Version**: 3.1 (Custom Welcome Update)\n\n" # Version updated
     )
     await update.message.reply_text(about_text, parse_mode='Markdown')
