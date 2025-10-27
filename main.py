@@ -2688,9 +2688,9 @@ def main() -> None:
     application.add_handler(CommandHandler("unmute", unmute_user))
     
     # --- NEW: Custom Welcome Admin Commands ---
-    application.add_handler(CommandHandler("setwelcome", set_welcome_message_command))
-    application.add_handler(CommandHandler("setwelcomemedia", set_welcome_media_command))
-    application.add_handler(CommandHandler("resetwelcome", reset_welcome_command))
+   # application.add_handler(CommandHandler("setwelcome", set_welcome_message_command))
+    #application.add_handler(CommandHandler("setwelcomemedia", set_welcome_media_command))
+  #  application.add_handler(CommandHandler("resetwelcome", reset_welcome_command))
     
     # Sudo-Only Commands (Sudo user or Owner required)
     application.add_handler(CommandHandler("poweron", check_sudo_wrapper(poweron_command)))
@@ -2728,7 +2728,7 @@ def main() -> None:
     
     # --- NEW: Add the CallbackQueryHandler for the game ---
     # This will catch all button presses and send them to game.py
-    application.add_handler(CallbackQueryHandler(game.handle_game_callback))
+    #application.add_handler(CallbackQueryHandler(game.handle_game_callback))
 
     application.add_error_handler(error_handler)
     
