@@ -323,11 +323,11 @@ async def get_bot_response(user_message: str, chat_id: int, bot_username: str, s
                                 (len(user_message.split()) > 7 and '?' in user_message) # Longer questions
             
             # Determine token limit
-            max_tokens = 30 # Default for detailed
+            max_tokens = 50 # Default for detailed
             if is_casual_chat and not is_detailed_query:
-                max_tokens = 10 # Very short for casual chat
+                max_tokens = 30 # Very short for casual chat
             elif not is_detailed_query:
-                max_tokens = 20 # Short-ish for general statements (increased from 60 to 70)
+                max_tokens = 40 # Short-ish for general statements (increased from 60 to 70)
             # --- END NEW LOGIC ---
             
             response = chat_session.send_message(
