@@ -2572,4 +2572,193 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 async def add_sudo_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.effective_user.id
     chat_id = update.effective_chat.id
-    if user_id != BROADCAST_
+    if user_id != BROADCAST_ADMIN_ID:
+        await context.bot.send_message(chat_id=chat_id, text="Sorry, this command is for the bot owner only.")
+        return
+    if not context.args or not context.args[0].isdigit():
+        await context.bot.send_message(chat_id=chat_id, text="Please provide a valid user ID. Usage: `/addsudo <user_id>`")
+        return
+    target_user_id = context.args[0]
+    if target_user_id in sudo_users:
+        await context.bot.send_message(chat_id=chat_id, text=f"User `{target_user_id}` is already a sudo user.")
+        return
+    sudo_users.add(target_user_id)
+    save_sudo_users()
+    await context.bot.send_message(chat_id=chat_id, text=f"User `{target_user_id}` has been added as a sudo user.")
+    logger.info(f"[{chat_id}] Admin {user_id} added sudo user {target_user_id}")
+    
+async def remove_sudo_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user_id = update.effective_user.id
+    chat_id = update.effective_chat.id
+    if user_id != BROADCAST_ADMIN_ID:
+        await context.bot.send_message(chat_id=chat_id, text="Sorry, this command is for the bot owner only.")
+        return
+    if not context.args or not context.args[0].isdigit():
+        await context.bot.send_message(chat_id=chat_id, text="Please provide a valid user ID. Usage: `/removesudo <user_id>`")
+        return
+    target_user_id = context.args[0]
+    if target_user_id not in sudo_users:
+        await context.bot.send_message(chat_id=chat_id, text=f"User `{target_user_id}` is not a sudo user.")
+        return
+    sudo_users.remove(target_user_id)
+    save_sudo_users()
+    await context.bot.send_message(chat_id=chat_id, text=f"User `{target_user_id}` has been removed as a sudo user.")
+    logger.info(f"[{chat_id}] Admin {user_id} removed sudo user {target_user_id}")
+
+# --- Check for sudo status ---
+def check_sudo_wrapper(handler):
+    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        user_id = str(update.effective_user.id)
+        # Check if user is the main owner OR a listed sudo user
+        if user_id == str(BROADCAST_ADMIN_ID) or user_id in sudo_users:
+            await handler(update, context)
+        else:
+            await context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, this command is restricted to sudo users only.")
+            logger.warning(f"Unauthorized access to restricted command by user {user_id} in chat {update.effective_chat.id}")
+    return wrapper
+
+# --- Main function ---
+def main() -> None:
+    application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+    
+    # --- NEW: Load all data from sheets on startup ---
+    # This call initializes all sheet variables (google_sheet, sudo_sheet, welcome_sheet)
+    client, error = get_google_sheet_connection()
+    if not client:
+        logger.critical(f"CRITICAL: Failed to connect to Google Sheets on startup. {error}")
+        # Depending on severity, you might want to exit
+        # return 
+    
+    load_known_users()
+    load_sudo_users()
+    load_welcome_settings() # NEW: Load custom welcomes into cache
+    
+    # General Commands
+    application.add_handler(CommandHandler("start", start_command))
+    application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("about", about_command))
+    application.add_handler(CommandHandler("stats", stats_command))
+    application.add_handler(CommandHandler("id", get_id_command))
+    
+    # Media & AI Commands
+    application.add_handler(CommandHandler("tr", translate_command))
+    application.add_handler(CommandHandler("gen", gen_command))
+    application.add_handler(CommandHandler("img", img_command))
+    application.add_handler(CommandHandler("lyrics", lyrics_command))
+    application.add_handler(CommandHandler("youtube", youtube_command))
+
+    # Utility Commands (NEW)
+    application.add_handler(CommandHandler("weather", weather_command))
+    application.add_handler(CommandHandler("crypto", crypto_command))
+    application.add_handler(CommandHandler("define", define_command))
+    application.add_handler(CommandHandler("qr", qr_command))
+    application.add_handler(CommandHandler("shorten", shorten_command))
+    application.add_handler(CommandHandler("ud", ud_command))
+    application.add_handler(CommandHandler("paste", paste_command))
+
+    # Fun & Game Commands
+    application.add_handler(CommandHandler("couple", couple_command))
+    application.add_handler(CommandHandler("truth", truth_command))
+    application.add_handler(CommandHandler("dare", dare_command))
+    application.add_handler(CommandHandler("slap", slap_command))
+    application.add_handler(CommandHandler("roll", roll_command))
+    application.add_handler(CommandHandler("coinflip", coinflip_command))
+    application.add_handler(CommandHandler("startgame", start_game_command))
+    application.add_handler(CommandHandler("stopgame", stop_game_command))
+    # Fun Commands (NEW)
+    application.add_handler(CommandHandler("meme", meme_command))
+    application.add_handler(CommandHandler("joke", joke_command))
+    application.add_handler(CommandHandler("quote", quote_command))
+    application.add_handler(CommandHandler("roast", roast_command))
+    application.add_handler(CommandHandler("rate", rate_command))
+    application.add_handler(CommandHandler("catfact", catfact_command))
+    application.add_handler(CommandHandler("dogfact", dogfact_command))
+    application.add_handler(CommandHandler("advice", advice_command))
+    
+    # --- NEW: Added Game Commands (Rob, Kill, Bank) ---
+    application.add_handler(CommandHandler("rob", game.handle_rob))
+    application.add_handler(CommandHandler("kill", game.handle_kill))
+    application.add_handler(CommandHandler("deposit", game.handle_deposit))
+    application.add_handler(CommandHandler("withdraw", game.handle_withdraw))
+    application.add_handler(CommandHandler("gift", game.handle_gift))
+
+    # --- NEW: Refactored Game Commands ---
+    application.add_handler(CommandHandler("game", game.start_game))
+    application.add_handler(CommandHandler("profile", game.start_game))
+    application.add_handler(CommandHandler("leaderboard", game.handle_leaderboard))
+    application.add_handler(CommandHandler("marry", game.handle_marry))
+    application.add_handler(CommandHandler("adopt", game.handle_adopt))
+    application.add_handler(CommandHandler("divorce", game.handle_divorce))
+    application.add_handler(CommandHandler("check", game.handle_check_profile))
+
+    # --- Admin Commands (Group Admin required) ---
+    application.add_handler(CommandHandler("on", on_command))
+    application.add_handler(CommandHandler("off", off_command))
+    application.add_handler(CommandHandler("reset", reset_command))
+    application.add_handler(CommandHandler("reboot", reboot_command))
+    application.add_handler(CommandHandler("ban", ban_user))
+    application.add_handler(CommandHandler("kick", kick_user))
+    application.add_handler(CommandHandler("mute", mute_user))
+    application.add_handler(CommandHandler("unban", unban_user))
+    application.add_handler(CommandHandler("unmute", unmute_user))
+    
+    # --- NEW: Custom Welcome Admin Commands ---
+    application.add_handler(CommandHandler("setwelcome", set_welcome_message_command))
+    application.add_handler(CommandHandler("setwelcomemedia", set_welcome_media_command))
+    application.add_handler(CommandHandler("resetwelcome", reset_welcome_command))
+    
+    # Sudo-Only Commands (Sudo user or Owner required)
+    application.add_handler(CommandHandler("poweron", check_sudo_wrapper(poweron_command)))
+    application.add_handler(CommandHandler("poweroff", check_sudo_wrapper(poweroff_command)))
+    application.add_handler(CommandHandler("broadcast", check_sudo_wrapper(broadcast_command)))
+    application.add_handler(CommandHandler("get_photo_id", check_sudo_wrapper(get_photo_id)))
+    application.add_handler(CommandHandler("adminstats", check_sudo_wrapper(admin_stats_command)))
+    application.add_handler(CommandHandler("forcegemma", check_sudo_wrapper(force_gemma_command)))
+    application.add_handler(CommandHandler("forcedynamic", check_sudo_wrapper(force_dynamic_command)))
+    application.add_handler(CommandHandler("forcedeepseek", check_sudo_wrapper(force_deepseek_command)))
+    application.add_handler(CommandHandler("show_chats", check_sudo_wrapper(show_chats_command)))
+    application.add_handler(CommandHandler("s_ban", check_sudo_wrapper(sudo_ban_user)))
+    application.add_handler(CommandHandler("s_unban", check_sudo_wrapper(sudo_unban_user)))
+    application.add_handler(CommandHandler("s_send", check_sudo_wrapper(sudo_send_message)))
+
+    # Owner-Only Sudo Management Commands (BROADCAST_ADMIN_ID required)
+    application.add_handler(CommandHandler("addsudo", add_sudo_command))
+    application.add_handler(CommandHandler("removesudo", remove_sudo_command))
+
+    # --- Message handlers ---
+    # ✨ ADDED THE NEW WELCOME HANDLER HERE ✨
+    application.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_members))
+    
+    # --- FIX: Added filters.EDITED_MESSAGE to handle edits ---
+    application.add_handler(MessageHandler(
+        (filters.TEXT | filters.CAPTION) & (~filters.UpdateType.EDITED_MESSAGE), 
+        process_message
+    ))
+    application.add_handler(MessageHandler(
+        (filters.UpdateType.EDITED_MESSAGE & (filters.TEXT | filters.CAPTION)), 
+        process_message
+    ))
+    
+    application.add_handler(MessageHandler(filters.VOICE, handle_voice_message))
+    
+    # --- NEW: Add the CallbackQueryHandler for the game ---
+    # This will catch all button presses and send them to game.py
+    application.add_handler(CallbackQueryHandler(game.handle_game_callback))
+
+    application.add_error_handler(error_handler)
+    
+    if WEBHOOK_URL:
+        PORT = int(os.getenv("PORT", "8000"))
+        application.run_webhook(
+            listen="0.0.0.0",
+            port=PORT,
+            url_path=TELEGRAM_BOT_TOKEN,
+            webhook_url=f"{WEBHOOK_URL}/{TELEGRAM_BOT_TOKEN}"
+        )
+        logger.info(f"Bot started with webhook on port {PORT}")
+    else:
+        logger.info("Starting bot in polling mode.")
+        application.run_polling()
+
+if __name__ == '__main__':
+    main()
