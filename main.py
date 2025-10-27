@@ -2623,15 +2623,15 @@ def main() -> None:
     
     # --- NEW: Load all data from sheets on startup ---
     # This call initializes all sheet variables (google_sheet, sudo_sheet, welcome_sheet)
-    client, error = get_google_sheet_connection()
-    if not client:
-        logger.critical(f"CRITICAL: Failed to connect to Google Sheets on startup. {error}")
+    #client, error = get_google_sheet_connection()
+    #if not client:
+        #logger.critical(f"CRITICAL: Failed to connect to Google Sheets on startup. {error}")
         # Depending on severity, you might want to exit
         # return 
     
-    load_known_users()
-    load_sudo_users()
-    load_welcome_settings() # NEW: Load custom welcomes into cache
+    #load_known_users()
+    #load_sudo_users()
+    #load_welcome_settings() # NEW: Load custom welcomes into cache
     
     # General Commands
     application.add_handler(CommandHandler("start", start_command))
@@ -2675,21 +2675,6 @@ def main() -> None:
     application.add_handler(CommandHandler("dogfact", dogfact_command))
     application.add_handler(CommandHandler("advice", advice_command))
     
-    # --- NEW: Added Game Commands (Rob, Kill, Bank) ---
-    application.add_handler(CommandHandler("rob", game.handle_rob))
-    application.add_handler(CommandHandler("kill", game.handle_kill))
-    application.add_handler(CommandHandler("deposit", game.handle_deposit))
-    application.add_handler(CommandHandler("withdraw", game.handle_withdraw))
-    application.add_handler(CommandHandler("gift", game.handle_gift))
-
-    # --- NEW: Refactored Game Commands ---
-    application.add_handler(CommandHandler("game", game.start_game))
-    application.add_handler(CommandHandler("profile", game.start_game))
-    application.add_handler(CommandHandler("leaderboard", game.handle_leaderboard))
-    application.add_handler(CommandHandler("marry", game.handle_marry))
-    application.add_handler(CommandHandler("adopt", game.handle_adopt))
-    application.add_handler(CommandHandler("divorce", game.handle_divorce))
-    application.add_handler(CommandHandler("check", game.handle_check_profile))
 
     # --- Admin Commands (Group Admin required) ---
     application.add_handler(CommandHandler("on", on_command))
