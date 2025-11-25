@@ -153,7 +153,7 @@ def get_leaderboard_markup(current_time, current_scope):
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # Replace PHOTO_ID_HERE with your Telegram file_id
     await update.message.reply_photo(
-        photo="PHOTO_ID_HERE",
+        photo="AgACAgUAAxkBAAI-RGkllZajU0MtaSv1NVp84YhJl8JuAAIGDWsbLhEoVfXhwnFaElgWAQADAgADeAADNgQ",
         caption=(
             "✨ **Welcome to Word Seek!** ✨\n\n"
             "🧩 **Guess the Secret 5-Letter Word** and climb the leaderboard!\n\n"
