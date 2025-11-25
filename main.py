@@ -85,7 +85,6 @@ def format_guess_result(target, guess):
     return "".join(result_emoji)
 
 # --- Leaderboard Logic (English) ---
-
 def get_leaderboard_text(time_frame, scope, chat_id):
     now = datetime.now()
     user_totals = defaultdict(int)
@@ -98,9 +97,9 @@ def get_leaderboard_text(time_frame, scope, chat_id):
         
         include = False
         if time_frame == 'today':
-            if entry['date'].date() == now.date(): include = True
+            include = entry['date'].date() == now.date()
         elif time_frame == 'week':
-            if entry['date'] >= now - timedelta(days=7): include = True
+            include = entry['date'] >= now - timedelta(days=7)
         else:
             include = True
             
@@ -108,47 +107,52 @@ def get_leaderboard_text(time_frame, scope, chat_id):
             user_totals[entry['user_id']] += entry['points']
             user_names[entry['user_id']] = entry['name']
 
-    # Sort
+    # Sort Top 10
     sorted_scores = sorted(user_totals.items(), key=lambda x: x[1], reverse=True)[:10]
 
-    # Build Text (Pure English)
+    # Header Text
     scope_txt = "🌍 Global" if scope == 'global' else "🏠 This Chat"
-    time_txt = {
-        'today': "Today",
-        'week': "This Week",
-        'all': "All Time"
-    }.get(time_frame, "")
+    time_labels = {'today': "📅 Today", 'week': "📆 This Week", 'all': "⏳ All Time"}
+    time_txt = time_labels.get(time_frame, "")
 
-    text = f"🏆 **WORD SEEK LEADERBOARD** 🏆\n"
-    text += f"({scope_txt} • {time_txt})\n\n"
+    text = (
+        "🏆 **WORD SEEK — LEADERBOARD** 🏆\n"
+        f"{scope_txt} • {time_txt}\n"
+        "━━━━━━━━━━━━━━━━━━━━\n\n"
+    )
 
+    # Empty State
     if not sorted_scores:
-        text += "No scores yet. Start playing with `/game`!"
-    else:
-        for idx, (uid, score) in enumerate(sorted_scores, 1):
-            medals = {1: "🥇", 2: "🥈", 3: "🥉"}
-            rank = medals.get(idx, f"{idx}.")
-            name = user_names.get(uid, "Player")
-            text += f"{rank} **{name}**: {score} pts\n"
+        text += "No players yet.\nStart playing with **/game**! 🎮"
+        return text
     
-    return text
+    # Ranks
+    medals = {1: "🥇", 2: "🥈", 3: "🥉"}
 
+    for idx, (uid, score) in enumerate(sorted_scores, 1):
+        icon = medals.get(idx, f"{idx}.")
+        name = user_names.get(uid, "Player")
+        text += f"{icon} **{name}** — {score} pts\n"
+
+    return text
 def get_leaderboard_markup(current_time, current_scope):
     new_scope = 'local' if current_scope == 'global' else 'global'
-    scope_text = "View 🏠 Local" if current_scope == 'global' else "View 🌍 Global"
+    scope_switch_txt = "🏠 Local" if current_scope == 'global' else "🌍 Global"
 
     keyboard = [
         [
-            InlineKeyboardButton("Today", callback_data=f"lb_today_{current_scope}"),
-            InlineKeyboardButton("Week", callback_data=f"lb_week_{current_scope}"),
-            InlineKeyboardButton("All Time", callback_data=f"lb_all_{current_scope}"),
+            InlineKeyboardButton("📅 Today", callback_data=f"lb_today_{current_scope}"),
+            InlineKeyboardButton("📆 Week", callback_data=f"lb_week_{current_scope}"),
+            InlineKeyboardButton("⏳ All Time", callback_data=f"lb_all_{current_scope}"),
         ],
         [
-            InlineKeyboardButton(scope_text, callback_data=f"lb_{current_time}_{new_scope}")
+            InlineKeyboardButton(f"Switch to {scope_switch_txt}", callback_data=f"lb_{current_time}_{new_scope}")
         ]
     ]
     return InlineKeyboardMarkup(keyboard)
 
+
+    
 # --- Command Handlers ---
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # Replace PHOTO_ID_HERE with your Telegram file_id
