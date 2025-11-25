@@ -8,7 +8,7 @@ uuid
 asyncio
 asyncpg 
 aiohttp
-
+psycopg2
 
 
 
