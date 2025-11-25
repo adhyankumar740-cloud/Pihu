@@ -150,19 +150,24 @@ def get_leaderboard_markup(current_time, current_scope):
     return InlineKeyboardMarkup(keyboard)
 
 # --- Command Handlers ---
-
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text(
-        "👋 **Welcome to Word Seek!**\n\n"
-        "Can you guess the hidden 5-letter word?\n\n"
-        "🎮 **How to Play:**\n"
-        "1. Type `/game` to start.\n"
-        "2. Just type any **5-letter word** in chat to guess (No command needed!).\n\n"
-        "📈 **Scoring:**\n"
-        "✅ Correct Word: **+5 Points**\n"
-        "❌ Wrong Guess: **-1 Point**\n\n"
-        "🏆 Check rank: `/leaderboard`"
+    # Replace PHOTO_ID_HERE with your Telegram file_id
+    await update.message.reply_photo(
+        photo="PHOTO_ID_HERE",
+        caption=(
+            "✨ **Welcome to Word Seek!** ✨\n\n"
+            "🧩 **Guess the Secret 5-Letter Word** and climb the leaderboard!\n\n"
+            "🎮 **How to Play**\n"
+            "• Type `/game` to begin your challenge.\n"
+            "• Send ANY **5-letter word** as your guess — no command needed.\n\n"
+            "📊 **Scoring System**\n"
+            "• 🟢 Correct Word: **+5 Points**\n"
+            "• 🔴 Wrong Guess: **−1 Point**\n\n"
+            "🏆 **See your ranking:** `/leaderboard`\n\n"
+            "Ready to test your vocabulary? Let’s go! 🚀"
+        )
     )
+
 
 async def game_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.effective_user.id
