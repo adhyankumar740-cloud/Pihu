@@ -248,7 +248,7 @@ async def game_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 async def stop_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.effective_user.id
     if user_id in user_games and user_games[user_id]["active"]:
-        word = user_games[user_games[user_id]["word"]
+        word = user_games[user_games][user_id]["word"]
         del user_games[user_id]
         await update.message.reply_text(f"🛑 Game stopped. The word was: **{word}**")
     else:
